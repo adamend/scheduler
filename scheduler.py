@@ -1,3 +1,4 @@
+import itertools
 import math
 import random
 
@@ -9,17 +10,17 @@ TEAM_NAMES = [
     'D',
     'E',
     'F',
-    'G',
-    'H',
-    'I',
-    'J',
+    ## 'G',
+    ## 'H',
+    ## 'I',
+    ## 'J',
 ]
 SHEET_NAMES = [
     'A',
     'B',
     'C',
-    'D',
-    'E'
+    ## 'D',
+    ## 'E'
 ]
 
 
@@ -50,12 +51,7 @@ class ScheduleMaker(object):
         return schedule
 
     def create_pairings(self):
-        pairings = []
-        for team in self.team_names:
-            teams_to_pair = self.team_names[self.team_names.index(team) + 1:]
-            for other_team in teams_to_pair:
-                pairings.append((team, other_team))
-        return pairings
+        return [game for game in itertools.combinations(self.team_names, 2)]
 
     def try_random_schedule(self):
         pairings = self.create_pairings()
