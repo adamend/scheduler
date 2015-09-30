@@ -1,3 +1,12 @@
+"""
+Next thing to try:
+- Generate a random (valid) schedule.
+- Count number of problems (over min/under max per sheet)
+- Randomly swap two games (possibly limiting the swap pool to only valid swaps?)
+- Count number of problems
+- If lower, replace schedule and repeat
+"""
+
 import itertools
 import math
 import random
@@ -10,17 +19,17 @@ TEAM_NAMES = [
     'D',
     'E',
     'F',
-    ## 'G',
-    ## 'H',
-    ## 'I',
-    ## 'J',
+    'G',
+    'H',
+    'I',
+    'J',
 ]
 SHEET_NAMES = [
     'A',
     'B',
     'C',
-    ## 'D',
-    ## 'E'
+    'D',
+    'E'
 ]
 
 
@@ -37,24 +46,26 @@ class ScheduleMaker(object):
     def make_schedule(self):
         schedule = None
         iterations = invalid = unbalanced = 0
+        pairings = self.create_pairings()
         while schedule is None:
             iterations += 1
-            print 'Attempt {}'.format(iterations)
+            if not iterations % 10000:
+                print 'Attempt {}'.format(iterations)
             try:
-                schedule = self.try_random_schedule()
+                schedule = self.try_random_schedule(pairings)
             except InvalidSchedule:
                 invalid += 1
             except UnbalancedSchedule:
                 unbalanced += 1
-        print 'Tried {} schedules ({} invalid, {} unbalanced) before finding a valid one.'.format(
+        print 'Tried {} schedules ({} invalid, {} unbalanced).'.format(
             iterations, invalid, unbalanced)
         return schedule
 
     def create_pairings(self):
         return [game for game in itertools.combinations(self.team_names, 2)]
 
-    def try_random_schedule(self):
-        pairings = self.create_pairings()
+    def try_random_schedule(self, pairings):
+        pairings = pairings[:]
         week_count = len(pairings) / len(self.sheet_names)
 
         team_sheet_counts = self.initialize_team_sheet_counts()
@@ -78,7 +89,6 @@ class ScheduleMaker(object):
                 team_sheet_counts[game[1]][sheet] += 1
             schedule.append(week_pairings)
 
-        print 'Checking for sheet balance'
         if not self.schedule_is_balanced(team_sheet_counts, week_count):
             raise UnbalancedSchedule()
         for team, counts in team_sheet_counts.items():
@@ -135,4 +145,5 @@ class ScheduleMaker(object):
 if __name__ == '__main__':
     schedule_maker = ScheduleMaker(TEAM_NAMES, SHEET_NAMES)
     schedule = schedule_maker.make_schedule()
-    schedule_maker.print_schedule(schedule)
+    if schedule:
+        schedule_maker.print_schedule(schedule)
